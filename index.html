@@ -113,7 +113,9 @@
     background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--foreground) 2px, var(--foreground) 4px);
   }
   .bg-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-  #rain { opacity: .13; }
+  /* rain is fixed to the viewport, so it falls behind every section */
+  #rain { position: fixed; z-index: 0; opacity: .12; }
+  main { position: relative; z-index: 1; }
   #net { opacity: .6; }
   .hero-in { position: relative; z-index: 10; text-align: center; width: 100%; max-width: 72rem; }
 
@@ -322,6 +324,7 @@
 <body>
 
 <div class="crt" aria-hidden="true"></div>
+<canvas id="rain" class="bg-fx" aria-hidden="true"></canvas>
 
 <nav class="dots" aria-label="Sections">
   <a href="#hero" title="Hero" aria-label="Top"></a>
@@ -335,7 +338,6 @@
 <main>
   <!-- HERO -->
   <section id="hero">
-    <canvas id="rain" class="bg-fx" aria-hidden="true"></canvas>
     <canvas id="net" class="bg-fx" aria-hidden="true"></canvas>
     <div class="scan" aria-hidden="true"></div>
     <div class="hero-in">
@@ -599,11 +601,11 @@
   }).join("");
 
   // ---------- pixel face: left half of each row, mirrored; outline is added automatically ----------
-  // H hair, F skin, G glasses frame, W lens, N nose shade, M mouth, C shirt
+  // H hair (and brows), F skin, W eye, N nose shade, M mouth, C shirt
   var HALF = [
     "....HHHHHH", "..HHHHHHHH", ".HHHHHHHHH", ".HHHHHHHHH", "HHHHHHHHHH",
-    "HHHFFHHHFF", "HHFFFFFFFF", "HFFFFFFFFF", "HGGGGGGGFF", "FGWWWWWGGG",
-    "FGWWWWWGFF", "FGWWWWWGFF", "FGGGGGGGFF", ".FFFFFFFFF", ".FFFFFFFFN",
+    "HHHFFHHHFF", "HHFFFFFFFF", "HFFFFFFFFF", "HFHHHHFFFF", "FFFFFFFFFF",
+    "FFWWWWFFFF", "FFWWWWFFFF", "FFFFFFFFFF", ".FFFFFFFFF", ".FFFFFFFFN",
     ".FFFFFFFFN", ".FFFFFMFFF", "..FFFFFMMM", "..FFFFFFFF", "...FFFFFFF",
     "....FFFFFF", "......FFFF", "......FFFF", "..CCCCCCCC", "CCCCCCCCCC"
   ];
@@ -627,20 +629,23 @@
       if (c !== ".") svg += '<rect class="p' + c + '" x="' + s + '" y="' + y + '" width="' + (x - s) + '" height="1"/>';
     }
   });
-  svg += '<rect class="pL" x="7" y="10" width="1" height="1"/><rect class="pL" x="18" y="10" width="1" height="1"/>';
-  svg += '<g id="eyes" class="pE"></g><g id="mouth" class="pM"></g>';
+  svg += '<g id="eyes"></g><g id="mouth" class="pM"></g>';
   face.setAttribute("viewBox", "0 0 " + FW + " " + FH);
   face.innerHTML = svg;
 
   var eyesEl = document.getElementById("eyes"), mouthEl = document.getElementById("mouth");
   var look = { x: 0, y: 0 }, happy = false, blinking = false, lastMove = 0;
-  function px(x, y, w, h) { return '<rect x="' + x + '" y="' + y + '" width="' + (w || 1) + '" height="' + (h || 1) + '"/>'; }
+  function px(x, y, w, h, cls) {
+    return '<rect class="' + (cls || "pE") + '" x="' + x + '" y="' + y + '" width="' + (w || 1) + '" height="' + (h || 1) + '"/>';
+  }
+  // eye sockets sit at x 3-6 (left) and 15-18 (right), rows 11-12
+  var LIDS = px(3, 11, 4, 2, "pF") + px(15, 11, 4, 2, "pF");
   function drawFace() {
-    mouthEl.innerHTML = happy ? px(9, 19, 4, 1) : "";
-    if (blinking) { eyesEl.innerHTML = px(3, 11, 5, 1) + px(14, 11, 5, 1); return; }
-    if (happy) { eyesEl.innerHTML = px(4, 12) + px(5, 11) + px(6, 12) + px(15, 12) + px(16, 11) + px(17, 12); return; }
-    var k = Math.round((look.x + 1) / 2 * 3), j = Math.round((look.y + 1) / 2);
-    eyesEl.innerHTML = px(3 + k, 10 + j, 2, 2) + px(14 + k, 10 + j, 2, 2);
+    mouthEl.innerHTML = happy ? px(9, 19, 4, 1, "pM") : "";
+    if (blinking) { eyesEl.innerHTML = LIDS + px(3, 12, 4, 1) + px(15, 12, 4, 1); return; }
+    if (happy) { eyesEl.innerHTML = LIDS + px(3, 12) + px(4, 11, 2, 1) + px(6, 12) + px(15, 12) + px(16, 11, 2, 1) + px(18, 12); return; }
+    var k = Math.round((look.x + 1) / 2 * 2);
+    eyesEl.innerHTML = px(3 + k, 11, 2, 2) + px(15 + k, 11, 2, 2);
   }
   function clamp1(v) { return Math.max(-1, Math.min(1, v)); }
   drawFace();
@@ -728,25 +733,63 @@
     look.x = Math.random() * 2 - 1; look.y = Math.random() - 0.5; drawFace();
   }, 2400);
 
-  // ---------- hero background: matrix rain + drifting neural net ----------
+  var GREEN = "60,221,119", DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  // ---------- matrix rain: one fixed canvas behind the whole page ----------
+  (function rainFx() {
+    var rc = document.getElementById("rain"), rx = rc.getContext("2d");
+    if (!rx) return;
+    var FS = 14, font = getComputedStyle(document.body).fontFamily;
+    var GLYPHS = "01アイウエオカキクケコサシスセソタチツテト<>{}[]=+*/λΣ∂∇πθ";
+    var w = 0, h = 0, cols = 0, drops = [], last = 0, raf = 0;
+    function size() {
+      var nw = window.innerWidth, nh = window.innerHeight;
+      if (nw === w && Math.abs(nh - h) < 80) return; // ignore phone address-bar jitter
+      w = nw; h = nh;
+      rc.width = w * DPR; rc.height = h * DPR;
+      rx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      rx.font = FS + "px " + font;
+      var old = drops;
+      cols = Math.ceil(w / FS); drops = [];
+      for (var i = 0; i < cols; i++) drops.push(old[i] != null ? old[i] : Math.random() * -h / FS);
+    }
+    function frame(t) {
+      if (t - last > 55) {
+        last = t;
+        rx.fillStyle = "rgba(12,14,18,0.12)"; rx.fillRect(0, 0, w, h);
+        for (var i = 0; i < cols; i++) {
+          var y = drops[i] * FS;
+          if (y > 0) {
+            rx.fillStyle = Math.random() < 0.08 ? "rgba(215,255,228,0.95)" : "rgba(" + GREEN + ",0.8)";
+            rx.fillText(GLYPHS[(Math.random() * GLYPHS.length) | 0], i * FS, y);
+          }
+          if (y > h && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+      }
+      raf = requestAnimationFrame(frame);
+    }
+    size();
+    window.addEventListener("resize", size);
+    document.addEventListener("visibilitychange", function () {
+      cancelAnimationFrame(raf);
+      if (!document.hidden) raf = requestAnimationFrame(frame);
+    });
+    raf = requestAnimationFrame(frame);
+  })();
+
+  // ---------- hero background: drifting neural net ----------
   (function heroFx() {
     var hero = document.getElementById("hero");
-    var rc = document.getElementById("rain"), nc = document.getElementById("net");
-    var rx = rc.getContext("2d"), nx = nc.getContext("2d");
-    if (!rx || !nx) return;
-    var dpr = Math.min(window.devicePixelRatio || 1, 2), FS = 14, font = getComputedStyle(document.body).fontFamily;
-    var GLYPHS = "01アイウエオカキクケコサシスセソタチツテト<>{}[]=+*/λΣ∂∇πθ";
-    var w = 0, h = 0, cols = 0, drops = [], nodes = [], pulses = [], mouse = { x: -1e4, y: -1e4 };
-    var GREEN = "60,221,119", D = 130;
+    var nc = document.getElementById("net"), nx = nc.getContext("2d");
+    if (!nx) return;
+    var dpr = DPR, w = 0, h = 0, nodes = [], pulses = [], mouse = { x: -1e4, y: -1e4 }, D = 130;
     function size() {
       var nw = hero.clientWidth, nh = hero.clientHeight;
       if (nw === w && nh === h) return;
       w = nw; h = nh;
-      [rc, nc].forEach(function (c) { c.width = w * dpr; c.height = h * dpr; });
-      rx.setTransform(dpr, 0, 0, dpr, 0, 0); nx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      rx.font = FS + "px " + font;
-      cols = Math.ceil(w / FS); drops = [];
-      for (var i = 0; i < cols; i++) drops.push(Math.random() * -h / FS);
+      nc.width = w * dpr; nc.height = h * dpr;
+      nx.setTransform(dpr, 0, 0, dpr, 0, 0);
       var n = Math.max(22, Math.min(70, Math.round(w * h / 17000)));
       nodes = []; pulses = [];
       for (var k = 0; k < n; k++) nodes.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3 });
@@ -760,22 +803,9 @@
       }
       return opts.length ? opts[(Math.random() * opts.length) | 0] : -1;
     }
-    var last = 0, acc = 0, raf = 0, on = false;
+    var last = 0, raf = 0, on = false;
     function frame(t) {
-      var dt = last ? Math.min(t - last, 100) : 16; last = t; acc += dt;
-      if (acc > 55) {
-        acc = 0;
-        rx.fillStyle = "rgba(12,14,18,0.12)"; rx.fillRect(0, 0, w, h);
-        for (var i = 0; i < cols; i++) {
-          var y = drops[i] * FS;
-          if (y > 0) {
-            rx.fillStyle = Math.random() < 0.08 ? "rgba(215,255,228,0.95)" : "rgba(" + GREEN + ",0.8)";
-            rx.fillText(GLYPHS[(Math.random() * GLYPHS.length) | 0], i * FS, y);
-          }
-          if (y > h && Math.random() > 0.975) drops[i] = 0;
-          drops[i]++;
-        }
-      }
+      var dt = last ? Math.min(t - last, 100) : 16; last = t;
       nx.clearRect(0, 0, w, h);
       var a, b, p, q, dx, dy, d;
       for (a = 0; a < nodes.length; a++) {
