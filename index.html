@@ -164,7 +164,7 @@
   .intro-side { order: -1; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; min-width: 0; }
   @media (min-width: 768px) {
     .intro-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 3rem; text-align: left; }
-    .intro-side { order: 0; }
+    .intro-side { order: 0; gap: 3rem; }
     .intro-text .name { font-size: clamp(2.5rem, 4.6vw, 3.75rem); }
     .intro-text .role { min-height: 4rem; }
   }
@@ -191,8 +191,8 @@
     background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--background) 2px, var(--background) 3px);
   }
   #face { display: block; width: 176px; height: 216px; shape-rendering: crispEdges; animation: float 4s ease-in-out infinite; }
-  @media (min-width: 768px) { #face { width: 220px; height: 270px; } }
-  @media (min-width: 1280px) and (min-height: 860px) { #face { width: 264px; height: 324px; } }
+  @media (min-width: 768px) { #face { width: 176px; height: 216px; } }
+  @media (min-width: 1280px) and (min-height: 860px) { #face { width: 220px; height: 270px; } }
   @keyframes float { 50% { transform: translateY(-6px); } }
   .pH { fill: var(--px-hair); } .pF { fill: var(--px-skin); } .pW { fill: var(--px-lens); } .pN { fill: var(--px-shade); }
   .pC { fill: var(--px-shirt); } .pG, .pO, .pM { fill: var(--primary); } .pE { fill: var(--foreground); } .pL { fill: var(--px-glint); }
