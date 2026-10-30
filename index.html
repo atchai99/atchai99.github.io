@@ -28,6 +28,7 @@
     --px-shade: hsl(142 25% 21%);
     --px-shirt: hsl(142 40% 19%);
     --px-glint: hsl(142 30% 85% / .45);
+    --nav-bg: hsl(220 20% 6% / .78);
     --tl-red: hsl(0 65% 60% / .85);
     --tl-yellow: hsl(42 85% 58% / .85);
     --tl-green: hsl(142 70% 55% / .85);
@@ -70,7 +71,44 @@
     z-index: 40; display: none; flex-direction: column; gap: .75rem;
   }
   .dots a { width: .5rem; height: .5rem; border-radius: 999px; background: var(--dot); transition: background-color .3s; }
-  .dots a:hover, .dots a:focus-visible { background: var(--primary); }
+  .dots a:hover, .dots a:focus-visible, .dots a.active { background: var(--primary); }
+
+  /* top tab bar: transparent over the hero, frosted once you scroll */
+  .topnav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 45;
+    padding-top: env(safe-area-inset-top, 0px);
+    border-bottom: 1px solid transparent;
+    transition: background-color .3s, border-color .3s, backdrop-filter .3s;
+  }
+  .topnav.scrolled { background: var(--nav-bg); border-bottom-color: var(--border); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .topnav-in {
+    max-width: 72rem; margin: 0 auto; height: 3.5rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+    padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+  }
+  .brand { font-size: .875rem; font-weight: 700; white-space: nowrap; }
+  .tabs { display: flex; align-items: center; gap: 1.5rem; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs a {
+    position: relative; padding-block: .3rem; font-size: .8rem; white-space: nowrap;
+    color: var(--muted-foreground); transition: color .25s;
+  }
+  .tabs a::after {
+    content: ""; position: absolute; left: 0; bottom: 0; height: 1px; width: 0;
+    background: var(--primary); transition: width .3s var(--ease);
+  }
+  .tabs a:hover, .tabs a.active { color: var(--foreground); }
+  .tabs a:hover::after, .tabs a.active::after { width: 100%; }
+  .tabs a.active::before { content: "./"; color: var(--primary); }
+  .tabs .tab-cv { color: var(--primary); }
+  @media (max-width: 639px) {
+    .brand { display: none; }
+    .topnav-in { justify-content: flex-start; }
+    .tabs { gap: 1.1rem; }
+  }
+  /* the hero button and contact list already link the resume on phones */
+  @media (max-width: 479px) { .tabs .tab-cv { display: none; } }
   @media (min-width: 768px) { .dots { display: flex; } }
 
   /* blinking block cursor */
@@ -106,7 +144,7 @@
   .hov:hover { border-color: var(--primary); }
 
   /* ---------- hero ---------- */
-  #hero { position: relative; overflow: hidden; flex-direction: column; padding-block: 4rem 2rem; }
+  #hero { position: relative; overflow: hidden; flex-direction: column; padding-block: 5rem 2rem; }
   @media (min-width: 768px) { #hero { padding-block: 0; } }
   #hero .scan {
     position: absolute; inset: 0; pointer-events: none; opacity: .03;
@@ -325,6 +363,20 @@
 
 <div class="crt" aria-hidden="true"></div>
 <canvas id="rain" class="bg-fx" aria-hidden="true"></canvas>
+
+<header class="topnav" id="topnav">
+  <div class="topnav-in">
+    <a class="brand" href="#hero"><span class="pri">~/</span>akshay</a>
+    <nav class="tabs" aria-label="Main">
+      <a href="#about">about</a>
+      <a href="#skills">skills</a>
+      <a href="#projects">projects</a>
+      <a href="#experience">experience</a>
+      <a href="#contact">contact</a>
+      <a class="tab-cv" href="Akshay_Sriram_Resume.pdf" target="_blank" rel="noopener">resume ↗</a>
+    </nav>
+  </div>
+</header>
 
 <nav class="dots" aria-label="Sections">
   <a href="#hero" title="Hero" aria-label="Top"></a>
@@ -600,12 +652,32 @@
       }).join("") + '</div>';
   }).join("");
 
+  // ---------- top tabs + side dots: highlight the section in view ----------
+  var topnav = document.getElementById("topnav");
+  function onScroll() { topnav.classList.toggle("scrolled", window.scrollY > 24); }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+  var navLinks = document.querySelectorAll('.tabs a[href^="#"], .dots a');
+  if ("IntersectionObserver" in window) {
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        navLinks.forEach(function (a) {
+          var on = a.getAttribute("href") === "#" + e.target.id;
+          a.classList.toggle("active", on);
+          if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+        });
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    document.querySelectorAll("main section[id]").forEach(function (s) { spy.observe(s); });
+  }
+
   // ---------- pixel face: left half of each row, mirrored; outline is added automatically ----------
-  // H hair (and brows), F skin, W eye, N nose shade, M mouth, C shirt
+  // H hair, F skin, G glasses frame, W lens, N nose shade, M mouth, C shirt
   var HALF = [
     "....HHHHHH", "..HHHHHHHH", ".HHHHHHHHH", ".HHHHHHHHH", "HHHHHHHHHH",
-    "HHHFFHHHFF", "HHFFFFFFFF", "HFFFFFFFFF", "HFHHHHFFFF", "FFFFFFFFFF",
-    "FFWWWWFFFF", "FFWWWWFFFF", "FFFFFFFFFF", ".FFFFFFFFF", ".FFFFFFFFN",
+    "HHHFFHHHFF", "HHFFFFFFFF", "HFFFFFFFFF", "HGGGGGGGFF", "FGWWWWWGGG",
+    "FGWWWWWGFF", "FGWWWWWGFF", "FGGGGGGGFF", ".FFFFFFFFF", ".FFFFFFFFN",
     ".FFFFFFFFN", ".FFFFFMFFF", "..FFFFFMMM", "..FFFFFFFF", "...FFFFFFF",
     "....FFFFFF", "......FFFF", "......FFFF", "..CCCCCCCC", "CCCCCCCCCC"
   ];
@@ -629,6 +701,7 @@
       if (c !== ".") svg += '<rect class="p' + c + '" x="' + s + '" y="' + y + '" width="' + (x - s) + '" height="1"/>';
     }
   });
+  svg += '<rect class="pL" x="7" y="10" width="1" height="1"/><rect class="pL" x="18" y="10" width="1" height="1"/>';
   svg += '<g id="eyes"></g><g id="mouth" class="pM"></g>';
   face.setAttribute("viewBox", "0 0 " + FW + " " + FH);
   face.innerHTML = svg;
@@ -638,14 +711,13 @@
   function px(x, y, w, h, cls) {
     return '<rect class="' + (cls || "pE") + '" x="' + x + '" y="' + y + '" width="' + (w || 1) + '" height="' + (h || 1) + '"/>';
   }
-  // eye sockets sit at x 3-6 (left) and 15-18 (right), rows 11-12
-  var LIDS = px(3, 11, 4, 2, "pF") + px(15, 11, 4, 2, "pF");
+  // lens interiors sit at x 3-7 (left) and 14-18 (right), rows 10-12
   function drawFace() {
     mouthEl.innerHTML = happy ? px(9, 19, 4, 1, "pM") : "";
-    if (blinking) { eyesEl.innerHTML = LIDS + px(3, 12, 4, 1) + px(15, 12, 4, 1); return; }
-    if (happy) { eyesEl.innerHTML = LIDS + px(3, 12) + px(4, 11, 2, 1) + px(6, 12) + px(15, 12) + px(16, 11, 2, 1) + px(18, 12); return; }
-    var k = Math.round((look.x + 1) / 2 * 2);
-    eyesEl.innerHTML = px(3 + k, 11, 2, 2) + px(15 + k, 11, 2, 2);
+    if (blinking) { eyesEl.innerHTML = px(3, 11, 5, 1) + px(14, 11, 5, 1); return; }
+    if (happy) { eyesEl.innerHTML = px(4, 12) + px(5, 11) + px(6, 12) + px(15, 12) + px(16, 11) + px(17, 12); return; }
+    var k = Math.round((look.x + 1) / 2 * 3), j = Math.round((look.y + 1) / 2);
+    eyesEl.innerHTML = px(3 + k, 10 + j, 2, 2) + px(14 + k, 10 + j, 2, 2);
   }
   function clamp1(v) { return Math.max(-1, Math.min(1, v)); }
   drawFace();
