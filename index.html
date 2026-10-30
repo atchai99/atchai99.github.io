@@ -100,7 +100,7 @@
   }
   .tabs a:hover, .tabs a.active { color: var(--foreground); }
   .tabs a:hover::after, .tabs a.active::after { width: 100%; }
-  .tabs a.active::before { content: "./"; color: var(--primary); }
+  .tabs a.active::before { content: "./"; position: absolute; right: 100%; color: var(--primary); }
   .tabs .tab-cv { color: var(--primary); }
   @media (max-width: 639px) {
     .brand { display: none; }
@@ -274,6 +274,38 @@
   .p-head { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
   @media (min-width: 768px) { .p-head { flex-direction: row; align-items: flex-start; justify-content: space-between; } }
   .p-head > div:first-child { min-width: 0; }
+
+  /* pixel sprite tile beside each project title */
+  .p-id { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+  .p-id > div:last-child { min-width: 0; }
+  .sprite {
+    flex: none; position: relative; width: 4.5rem; height: 4.5rem; display: grid; place-items: center;
+    background: var(--px-lens); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+    transition: border-color .3s;
+  }
+  .sprite::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .25;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--background) 2px, var(--background) 3px);
+  }
+  .card:hover .sprite { border-color: var(--primary-30); }
+  .sprite svg { display: block; shape-rendering: crispEdges; overflow: visible; filter: drop-shadow(0 0 6px var(--primary-20)); }
+  .sprite svg * { transform-box: fill-box; transform-origin: center; }
+  /* goggles: mask bobs, bubbles rise */
+  .sp-bob { animation: spbob 2.4s steps(2, jump-none) infinite; }
+  @keyframes spbob { 50% { transform: translateY(-1px); } }
+  .bub { opacity: 0; animation: rise 2.4s steps(6) infinite; }
+  @keyframes rise { 0% { opacity: 0; transform: translateY(0); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
+  /* brain: neurons fire */
+  .spark { opacity: 0; animation: spark 2.6s steps(1) infinite; }
+  @keyframes spark { 0%, 100% { opacity: 0; } 8%, 28% { opacity: 1; } 30% { opacity: 0; } }
+  /* paper: scan line sweeps, then a check stamps */
+  .sweep { animation: sweep 2.8s steps(11, jump-none) infinite; }
+  @keyframes sweep { 0% { transform: translateY(0); opacity: 1; } 65% { transform: translateY(11px); opacity: 1; } 66%, 100% { transform: translateY(11px); opacity: 0; } }
+  .check { opacity: 0; animation: check 2.8s steps(1) infinite; }
+  @keyframes check { 0%, 68% { opacity: 0; } 70%, 96% { opacity: 1; } 97%, 100% { opacity: 0; } }
+  /* coin: spins */
+  .spin { animation: spin 2.4s steps(10) infinite; }
+  @keyframes spin { 0% { transform: scaleX(1); } 50% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
   .p-title { font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; display: flex; align-items: baseline; gap: .5rem; }
   .p-meta { font-size: .875rem; line-height: 1.25rem; color: var(--muted-foreground); }
   .tags { display: flex; flex-wrap: wrap; gap: .5rem; flex-shrink: 0; }
@@ -356,6 +388,8 @@
     .js .fill { width: var(--lvl); transition: none; }
     .cur, .bob, .fadein, .up10, .late, #face, .face-btn:active #face { animation: none; }
     .bg-fx { display: none; }
+    .sprite svg * { animation: none !important; }
+    .check { opacity: 1; }
   }
 </style>
 </head>
@@ -475,9 +509,12 @@
       <div class="stack">
         <article class="card hov" data-r="u30">
           <div class="p-head">
-            <div>
-              <h3 class="p-title"><span class="pri">./</span>AquaVision</h3>
-              <span class="p-meta">Deep Learning Image Restoration</span>
+            <div class="p-id">
+              <div class="sprite" data-sprite="goggles" aria-hidden="true"></div>
+              <div>
+                <h3 class="p-title"><span class="pri">./</span>AquaVision</h3>
+                <span class="p-meta">Deep Learning Image Restoration</span>
+              </div>
             </div>
             <div class="tags"><span class="tag">Python</span><span class="tag">PyTorch</span><span class="tag">OpenCV</span><span class="tag">NumPy</span></div>
           </div>
@@ -486,9 +523,12 @@
         </article>
         <article class="card hov" data-r="u30" style="--dl:.1s">
           <div class="p-head">
-            <div>
-              <h3 class="p-title"><span class="pri">./</span>MindBridge</h3>
-              <span class="p-meta">Agentic AI Mental Health Assistant</span>
+            <div class="p-id">
+              <div class="sprite" data-sprite="brain" aria-hidden="true"></div>
+              <div>
+                <h3 class="p-title"><span class="pri">./</span>MindBridge</h3>
+                <span class="p-meta">Agentic AI Mental Health Assistant</span>
+              </div>
             </div>
             <div class="tags"><span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">LangGraph</span><span class="tag">ChromaDB</span><span class="tag">React</span></div>
           </div>
@@ -497,9 +537,12 @@
         </article>
         <article class="card hov" data-r="u30" style="--dl:.2s">
           <div class="p-head">
-            <div>
-              <h3 class="p-title"><span class="pri">./</span>TalentIQ</h3>
-              <span class="p-meta">AI Resume Shortlisting System</span>
+            <div class="p-id">
+              <div class="sprite" data-sprite="paper" aria-hidden="true"></div>
+              <div>
+                <h3 class="p-title"><span class="pri">./</span>TalentIQ</h3>
+                <span class="p-meta">AI Resume Shortlisting System</span>
+              </div>
             </div>
             <div class="tags"><span class="tag">Python</span><span class="tag">Streamlit</span><span class="tag">Mistral AI</span></div>
           </div>
@@ -508,9 +551,12 @@
         </article>
         <article class="card hov" data-r="u30" style="--dl:.3s">
           <div class="p-head">
-            <div>
-              <h3 class="p-title"><span class="pri">./</span>EcoCoin: Sustainable Action Recognition</h3>
-              <span class="p-meta">Mar 2025</span>
+            <div class="p-id">
+              <div class="sprite" data-sprite="coin" aria-hidden="true"></div>
+              <div>
+                <h3 class="p-title"><span class="pri">./</span>EcoCoin: Sustainable Action Recognition</h3>
+                <span class="p-meta">Mar 2025</span>
+              </div>
             </div>
             <div class="tags"><span class="tag">AWS</span><span class="tag">ML</span><span class="tag">Computer Vision</span></div>
           </div>
@@ -651,6 +697,92 @@
           '<div class="bar"><div class="fill" style="--lvl:' + s[1] + '%;--bd:' + (r * 0.1) + 's"></div></div></div>';
       }).join("") + '</div>';
   }).join("");
+
+  // ---------- project sprites: same pixel palette as the face (G frame, C fill, W dark, H mid, N shade, E bright, L glint) ----------
+  function pixels(rows, dx, dy) {
+    var out = "";
+    rows.forEach(function (row, y) {
+      for (var x = 0; x < row.length;) {
+        var c = row[x], s = x;
+        while (x < row.length && row[x] === c) x++;
+        if (c !== ".") out += '<rect class="p' + c + '" x="' + (s + (dx || 0)) + '" y="' + (y + (dy || 0)) + '" width="' + (x - s) + '" height="1"/>';
+      }
+    });
+    return out;
+  }
+  function dot(cls, x, y, delay) {
+    return '<rect class="' + cls + '" x="' + x + '" y="' + y + '" width="1" height="1"' + (delay ? ' style="animation-delay:' + delay + 's"' : "") + "/>";
+  }
+  var SPRITES = {
+    goggles: { box: [0, -5, 16, 12], art:
+      '<g class="sp-bob">' + pixels([
+        "..GGGGGGGGGGGG..",
+        "HGWWWWGGGGWWWWGH",
+        "HGWWWWGGGGWWWWGH",
+        "HGWWWWGGGGWWWWGH",
+        "..GWWWGNNGWWWG..",
+        "...GGGGNNGGGG...",
+        "......GGGG......"
+      ]) + dot("pL", 2, 1) + dot("pL", 10, 1) + "</g>" +
+      dot("pE bub", 13, -1, 0) + dot("pE bub", 14, -1, 0.8) + dot("pE bub", 12, -1, 1.6) },
+    brain: { box: [0, 0, 16, 12], art:
+      '<g class="sp-bob">' + pixels([
+        "....GGG..GGG....",
+        "..GGCCCGGCCCGG..",
+        ".GCCWWCCGCCWWCG.",
+        "GCCWCCCCGCCCCWCG",
+        "GCCCCWWCGCWWCCCG",
+        "GCWWCCCCGCCCCWWG",
+        "GCCCCWCCGCCWCCCG",
+        ".GCCWCCCGCCCWCG.",
+        "..GGCCCGGCCCGG..",
+        "....GGGGGGGG....",
+        ".......GCG......",
+        ".......GGG......"
+      ]) +
+      dot("pE spark", 5, 3, 0) + dot("pE spark", 11, 2, 0.5) + dot("pE spark", 3, 6, 1.1) +
+      dot("pE spark", 12, 6, 1.6) + dot("pE spark", 6, 7, 2.0) + dot("pE spark", 10, 4, 0.8) + "</g>" },
+    paper: { box: [0, 0, 12, 14], art:
+      pixels([
+        "GGGGGGGGG...",
+        "GCCCCCCCGG..",
+        "GCWWWWCCGCG.",
+        "GCCCCCCCGGGG",
+        "GCWWWWWWWWCG",
+        "GCCCCCCCCCCG",
+        "GCWWWWWWWCCG",
+        "GCCCCCCCCCCG",
+        "GCWWWWWWWWCG",
+        "GCCCCCCCCCCG",
+        "GCWWWWWCCCCG",
+        "GCCCCCCCCCCG",
+        "GCCCCCCCCCCG",
+        "GGGGGGGGGGGG"
+      ]) +
+      '<rect class="pL sweep" x="1" y="1" width="10" height="1"/>' +
+      '<g class="check">' + dot("pE", 10, 8) + dot("pE", 9, 9) + dot("pE", 8, 10) + dot("pE", 7, 11) + dot("pE", 6, 10) + dot("pE", 5, 9) + "</g>" },
+    coin: { box: [0, 0, 12, 12], art:
+      '<g class="spin">' + pixels([
+        "...GGGGGG...",
+        ".GGCCCCCCGG.",
+        ".GCCHHHHCCG.",
+        "GCCHCCCCHCCG",
+        "GCHCCCGGCHCG",
+        "GCHCCGGGCHCG",
+        "GCHCGGGCCHCG",
+        "GCHCGCCCCHCG",
+        "GCCHCCCCHCCG",
+        ".GCCHHHHCCG.",
+        ".GGCCCCCCGG.",
+        "...GGGGGG..."
+      ]) + dot("pL", 2, 3) + dot("pL", 3, 2) + "</g>" }
+  };
+  document.querySelectorAll(".sprite[data-sprite]").forEach(function (el) {
+    var s = SPRITES[el.getAttribute("data-sprite")];
+    if (!s) return;
+    el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + s.box.join(" ") + '" width="' + s.box[2] * 4 +
+      '" height="' + s.box[3] * 4 + '">' + s.art + "</svg>";
+  });
 
   // ---------- top tabs + side dots: highlight the section in view ----------
   var topnav = document.getElementById("topnav");
