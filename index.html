@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Akshay Sriram</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Akshay Sriram: machine learning engineer and data scientist. Agentic AI, computer vision, and model evaluation.">
+<style>
+  /* Layout: terminal-in-the-dark. Full-height sections, one centered column each, scanlines over everything. */
+  :root {
+    --background: hsl(220 20% 6%);
+    --foreground: hsl(142 30% 85%);
+    --card: hsl(220 20% 9%);
+    --primary: hsl(142 70% 55%);
+    --primary-10: hsl(142 70% 55% / .1);
+    --primary-20: hsl(142 70% 55% / .2);
+    --primary-30: hsl(142 70% 55% / .3);
+    --accent: hsl(142 60% 45%);
+    --muted: hsl(220 15% 15%);
+    --muted-foreground: hsl(142 20% 55%);
+    --dot: hsl(142 20% 55% / .3);
+    --border: hsl(220 15% 18%);
+    --scan-global: hsl(142 30% 85% / .1);
+    --radius: .25rem;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --ease: cubic-bezier(.25, .1, .25, 1);
+    --ease-out: cubic-bezier(0, 0, .58, 1);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; border-color: var(--border); }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--mono);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { overflow-x: clip; }
+  ::selection { background: var(--primary-30); color: var(--foreground); }
+  h1, h2, h3, h4, p, ul { margin: 0; }
+  ul { padding: 0; list-style: none; }
+  a { color: inherit; text-decoration: none; }
+  a:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 2px; }
+  .pri { color: var(--primary); }
+  .mut { color: var(--muted-foreground); }
+  .fg { color: var(--foreground); }
+
+  /* global CRT overlay */
+  .crt {
+    position: fixed; inset: 0; pointer-events: none; z-index: 50; opacity: .02;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--scan-global) 2px, var(--scan-global) 4px);
+  }
+
+  /* side nav dots */
+  .dots {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    right: calc(1.5rem + env(safe-area-inset-right, 0px));
+    z-index: 40; display: none; flex-direction: column; gap: .75rem;
+  }
+  .dots a { width: .5rem; height: .5rem; border-radius: 999px; background: var(--dot); transition: background-color .3s; }
+  .dots a:hover, .dots a:focus-visible { background: var(--primary); }
+  @media (min-width: 768px) { .dots { display: flex; } }
+
+  /* blinking block cursor */
+  .cur {
+    display: inline-block; width: 3px; height: 1em; background: var(--primary);
+    margin-left: .25rem; vertical-align: middle;
+    animation: blink .5s ease-in-out infinite alternate;
+  }
+  @keyframes blink { from { opacity: 1; } to { opacity: 0; } }
+
+  section {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding-block: 5rem;
+    padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+  }
+  .wrap { width: 100%; min-width: 0; }
+  .w-4xl { max-width: 56rem; }
+  .w-5xl { max-width: 64rem; }
+  .w-6xl { max-width: 72rem; }
+  .w-2xl { max-width: 42rem; text-align: center; }
+
+  h2 {
+    font-size: 1.875rem; line-height: 2.25rem; font-weight: 700;
+    margin-bottom: 3rem; text-align: center; text-wrap: balance;
+  }
+  h2.left { text-align: left; margin-bottom: 2rem; }
+  @media (min-width: 768px) { h2 { font-size: 3rem; line-height: 1; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+  .hov { transition: border-color .3s; }
+  .hov:hover { border-color: var(--primary); }
+
+  /* ---------- hero ---------- */
+  #hero { position: relative; overflow: hidden; flex-direction: column; padding-block: 0; }
+  #hero .scan {
+    position: absolute; inset: 0; pointer-events: none; opacity: .03;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--foreground) 2px, var(--foreground) 4px);
+  }
+  .hero-in { position: relative; z-index: 10; text-align: center; max-width: 56rem; }
+  .greet { font-size: 3.75rem; line-height: 1; font-weight: 700; margin-bottom: 2rem; }
+  .name { font-size: 2.25rem; line-height: 2.5rem; font-weight: 700; margin-bottom: 1.5rem; text-wrap: balance; }
+  .role { font-size: 1.25rem; line-height: 1.75rem; color: var(--muted-foreground); margin-bottom: 2rem; min-height: 40px; }
+  .quote { font-size: 1.125rem; line-height: 1.75rem; color: var(--muted-foreground); font-style: italic; }
+  .scroll { margin-top: 4rem; color: var(--muted-foreground); display: inline-block; }
+  .scroll .arrow { margin-top: .5rem; font-size: 1.5rem; line-height: 2rem; }
+  .bob { animation: bob 1.5s ease-in-out infinite; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+  .scroll small { font-size: .875rem; }
+  @media (min-width: 768px) {
+    .greet { font-size: 6rem; }
+    .name { font-size: 3.75rem; line-height: 1; }
+    .role { font-size: 1.5rem; line-height: 2rem; }
+    .quote { font-size: 1.25rem; }
+  }
+
+  /* ---------- about ---------- */
+  .about { padding: 1.5rem; }
+  @media (min-width: 768px) { .about { padding: 2rem; } }
+  .cmd { color: var(--muted-foreground); margin-bottom: 1rem; }
+  .about p { line-height: 1.625; margin-bottom: 1.5rem; }
+  .rule { border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem; }
+  .facts { display: grid; gap: 1rem; font-size: .875rem; line-height: 1.25rem; }
+  @media (min-width: 768px) { .facts { grid-template-columns: 1fr 1fr; } }
+  .chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .chip {
+    padding: .25rem .75rem; background: var(--muted); border: 1px solid var(--border);
+    font-size: .75rem; line-height: 1rem; border-radius: 0;
+  }
+
+  /* ---------- skills ---------- */
+  .grid2 { display: grid; gap: 2rem; }
+  @media (min-width: 768px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+  .cat-head { display: flex; align-items: center; gap: .5rem; margin-bottom: 1.5rem; }
+  .cat-head b { font-weight: 700; }
+  .cat-head .pri { font-size: .875rem; }
+  .sk { margin-bottom: 1rem; }
+  .sk-top { display: flex; justify-content: space-between; margin-bottom: .25rem; }
+  .sk-top span:first-child { font-size: .875rem; line-height: 1.25rem; }
+  .sk-top span:last-child { font-size: .75rem; line-height: 1rem; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  .bar { height: .75rem; background: var(--muted); border: 1px solid var(--border); overflow: hidden; }
+  .fill { height: 100%; width: var(--lvl); background: linear-gradient(to right, var(--primary), var(--accent)); }
+  .js .fill { width: 0; transition: width 1s var(--ease-out) var(--bd, 0s); }
+  .js .fill.on { width: var(--lvl); }
+
+  /* ---------- projects ---------- */
+  .stack { display: flex; flex-direction: column; gap: 1.5rem; }
+  .p-head { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
+  @media (min-width: 768px) { .p-head { flex-direction: row; align-items: flex-start; justify-content: space-between; } }
+  .p-head > div:first-child { min-width: 0; }
+  .p-title { font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; display: flex; align-items: baseline; gap: .5rem; }
+  .p-meta { font-size: .875rem; line-height: 1.25rem; color: var(--muted-foreground); }
+  .tags { display: flex; flex-wrap: wrap; gap: .5rem; flex-shrink: 0; }
+  @media (min-width: 768px) { .tags { max-width: 45%; justify-content: flex-end; } }
+  .tag {
+    padding: .25rem .5rem; background: var(--primary-10); color: var(--primary);
+    border: 1px solid var(--primary-20); border-radius: var(--radius); font-size: .75rem; line-height: 1rem;
+  }
+  .p-desc { color: var(--muted-foreground); font-size: .875rem; line-height: 1.25rem; margin-bottom: 1rem; }
+  .hl { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+  .hl span { font-size: .75rem; line-height: 1rem; }
+  .hl span::before { content: "→ "; color: var(--primary); }
+  .hl a { margin-left: auto; font-size: .75rem; line-height: 1rem; color: var(--muted-foreground); transition: color .3s; }
+  .hl a:hover { color: var(--primary); }
+
+  /* ---------- experience ---------- */
+  .blk { margin-bottom: 3rem; }
+  .blk:last-child { margin-bottom: 0; }
+  .blk h3 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 400; color: var(--primary); margin-bottom: 1.5rem; }
+  .job + .job { margin-top: 1rem; }
+  .j-head { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1rem; }
+  @media (min-width: 768px) { .j-head { flex-direction: row; align-items: flex-start; justify-content: space-between; } }
+  .j-head h4 { font-weight: 700; }
+  .j-head p, .j-head > span { font-size: .875rem; line-height: 1.25rem; }
+  .j-head > span { color: var(--primary); white-space: nowrap; }
+  .pts { display: flex; flex-direction: column; gap: .5rem; }
+  .pts li { display: flex; font-size: .875rem; line-height: 1.25rem; color: var(--muted-foreground); }
+  .pts li::before { content: "→"; color: var(--primary); margin-right: .5rem; }
+  .lead { display: grid; gap: 1rem; }
+  @media (min-width: 768px) { .lead { grid-template-columns: 1fr 1fr; } }
+  .lead .card { padding: 1rem; }
+  .lead h4 { font-size: .875rem; line-height: 1.25rem; font-weight: 700; margin-bottom: .25rem; }
+  .lead .per { font-size: .75rem; line-height: 1rem; color: var(--primary); margin-bottom: .5rem; }
+  .lead .d { font-size: .75rem; line-height: 1rem; color: var(--muted-foreground); }
+  .conf { display: flex; flex-direction: column; gap: 1rem; }
+  @media (min-width: 768px) { .conf { flex-direction: row; align-items: center; justify-content: space-between; } }
+  .conf h4 { font-weight: 700; }
+  .conf .s { font-size: .875rem; line-height: 1.25rem; color: var(--muted-foreground); }
+  .conf .r { text-align: right; flex-shrink: 0; }
+  .conf .r p:first-child { font-size: .875rem; line-height: 1.25rem; color: var(--primary); }
+  .conf .r p:last-child { font-size: .75rem; line-height: 1rem; color: var(--muted-foreground); }
+  @media (max-width: 767px) { .conf .r { text-align: left; } }
+
+  /* ---------- contact ---------- */
+  .intro { color: var(--muted-foreground); margin-bottom: 3rem; }
+  .c-card { padding: 2rem; }
+  .c-card .cmd { text-align: left; margin-bottom: 1.5rem; }
+  .links { display: flex; flex-direction: column; gap: 1.5rem; text-align: left; }
+  .links a {
+    display: flex; align-items: center; gap: 1rem; min-width: 0;
+    transition: color .15s, transform .35s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  .links a span { overflow-wrap: anywhere; }
+  .links a:hover { color: var(--primary); transform: translateX(10px); }
+  .links svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; color: var(--primary); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .foot { margin-top: 4rem; font-size: .875rem; line-height: 1.25rem; color: var(--muted-foreground); }
+
+  /* ---------- reveal-on-scroll (only once JS is running) ---------- */
+  .js [data-r] {
+    opacity: 0; transform: var(--from, translateY(50px));
+    transition: opacity var(--dur, .6s) var(--ease) var(--dl, 0s), transform var(--dur, .6s) var(--ease) var(--dl, 0s);
+  }
+  .js [data-r].on { opacity: 1; transform: none; }
+  [data-r="l"] { --from: translateX(-30px); --dur: .5s; }
+  [data-r="r"] { --from: translateX(30px); --dur: .5s; }
+  [data-r="u30"] { --from: translateY(30px); --dur: .5s; }
+  [data-r="u20"] { --from: translateY(20px); --dur: .5s; }
+  [data-r="fade"] { --from: none; --dur: .5s; }
+
+  .js #intro { display: none; }
+  .fadein { animation: fadein .5s var(--ease) both; }
+  @keyframes fadein { from { opacity: 0; } }
+  .up10 { animation: up10 .5s var(--ease) .3s both; }
+  @keyframes up10 { from { opacity: 0; transform: translateY(10px); } }
+  .late { animation: fadein .3s var(--ease) 2s both; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .js [data-r] { opacity: 1; transform: none; transition: none; }
+    .js .fill { width: var(--lvl); transition: none; }
+    .cur, .bob, .fadein, .up10, .late { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="crt" aria-hidden="true"></div>
+
+<nav class="dots" aria-label="Sections">
+  <a href="#hero" title="Hero" aria-label="Top"></a>
+  <a href="#about" title="About" aria-label="About"></a>
+  <a href="#skills" title="Skills" aria-label="Skills"></a>
+  <a href="#projects" title="Projects" aria-label="Projects"></a>
+  <a href="#experience" title="Experience" aria-label="Experience"></a>
+  <a href="#contact" title="Contact" aria-label="Contact"></a>
+</nav>
+
+<main>
+  <!-- HERO -->
+  <section id="hero">
+    <div class="scan" aria-hidden="true"></div>
+    <div class="hero-in">
+      <h1 id="greet" class="greet" aria-hidden="true"></h1>
+      <div id="intro">
+        <h1 class="name">Hello, I Am <span class="pri">Akshay Sriram</span><span class="cur"></span></h1>
+        <div class="role"><span class="pri">&gt;</span> I'd Say I'm a: <span id="typed" class="fg">ML Engineer</span><span class="cur"></span></div>
+        <p id="quote" class="quote" hidden>"...and I'm happy to be human."<span class="cur"></span></p>
+        <div class="late">
+          <a href="#about" class="scroll bob"><small>scroll down</small><div class="arrow">↓</div></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="wrap w-4xl" data-r>
+      <h2 class="left"><span class="pri">&gt;</span> About Me<span class="cur"></span></h2>
+      <div class="card about">
+        <div class="cmd"><span class="pri">$</span> cat about.txt</div>
+        <p>Ambitious and dedicated engineer driven by curiosity and a genuine love for building intelligent systems. I build agentic AI workflows, computer vision models, and the evaluation harnesses that keep deployed models fair and safe. Currently a Machine Learning Engineer at Kednus Corporation while pursuing a B.Tech in Electronics and Communication Engineering at National Institute of Technology, Calicut.</p>
+        <div class="rule">
+          <div class="facts">
+            <div><span class="pri">status:</span> US Citizen</div>
+            <div><span class="pri">location:</span> Calicut, India</div>
+            <div><span class="pri">degree:</span> B.Tech ECE (2023-2027)</div>
+            <div><span class="pri">current:</span> ML Engineer @ Kednus</div>
+            <div><span class="pri">published:</span> IEEE Xplore 2025</div>
+            <div><span class="pri">seeking:</span> ML &amp; Data Science Roles</div>
+          </div>
+        </div>
+        <div class="rule">
+          <div class="cmd" style="margin-bottom:.75rem"><span class="pri">$</span> cat coursework.txt</div>
+          <div class="chips">
+            <span class="chip">Machine Learning</span>
+            <span class="chip">Statistics &amp; Probability</span>
+            <span class="chip">Predictive &amp; Generative AI</span>
+            <span class="chip">Computer Vision / Deep Learning</span>
+            <span class="chip">NLP</span>
+            <span class="chip">Reinforcement Learning</span>
+            <span class="chip">Data Structures &amp; Algorithms</span>
+            <span class="chip">OOP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="wrap w-6xl" data-r>
+      <h2><span class="pri">&gt;</span> Technical Skills<span class="cur"></span></h2>
+      <div class="grid2" id="skillgrid"></div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="wrap w-5xl" data-r>
+      <h2><span class="pri">&gt;</span> Projects<span class="cur"></span></h2>
+      <div class="stack">
+        <article class="card hov" data-r="u30">
+          <div class="p-head">
+            <div>
+              <h3 class="p-title"><span class="pri">./</span>AquaVision</h3>
+              <span class="p-meta">Deep Learning Image Restoration</span>
+            </div>
+            <div class="tags"><span class="tag">Python</span><span class="tag">PyTorch</span><span class="tag">OpenCV</span><span class="tag">NumPy</span></div>
+          </div>
+          <p class="p-desc">Attention-residual U-Net that restores images degraded by scattering and wavelength-dependent attenuation, the same physics behind atmospheric haze and low-visibility camera feeds. Benchmarked against U-Net and FUnIE-GAN baselines on the UIEB dataset.</p>
+          <div class="hl"><span>+2.5 dB PSNR over baselines</span><span>9.1 ms/frame inference</span><span>Real-time ready</span><a href="https://github.com/atchai99/aquavision" target="_blank" rel="noopener noreferrer">github ↗</a></div>
+        </article>
+        <article class="card hov" data-r="u30" style="--dl:.1s">
+          <div class="p-head">
+            <div>
+              <h3 class="p-title"><span class="pri">./</span>MindBridge</h3>
+              <span class="p-meta">Agentic AI Mental Health Assistant</span>
+            </div>
+            <div class="tags"><span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">LangGraph</span><span class="tag">ChromaDB</span><span class="tag">React</span></div>
+          </div>
+          <p class="p-desc">Multi-agent LangGraph system where a meta-agent routes between emotion, cognitive, and empathetic agents, with ChromaDB RAG memory built on Hugging Face counseling and therapy datasets. Every response is scored on 7 quality and safety dimensions.</p>
+          <div class="hl"><span>Meta-agent routing</span><span>RAG memory</span><span>3-tier crisis risk classifier</span><a href="https://github.com/atchai99/mindbridge-agentic-ai" target="_blank" rel="noopener noreferrer">github ↗</a></div>
+        </article>
+        <article class="card hov" data-r="u30" style="--dl:.2s">
+          <div class="p-head">
+            <div>
+              <h3 class="p-title"><span class="pri">./</span>TalentIQ</h3>
+              <span class="p-meta">AI Resume Shortlisting System</span>
+            </div>
+            <div class="tags"><span class="tag">Python</span><span class="tag">Streamlit</span><span class="tag">Mistral AI</span></div>
+          </div>
+          <p class="p-desc">End-to-end pipeline that parses resumes into structured features, scores candidates on semantic similarity, achievements, and ownership, and serves the results through a Streamlit UI.</p>
+          <div class="hl"><span>Resume feature extraction</span><span>Semantic scoring</span><span>Explainable tier classification</span><a href="https://github.com/atchai99/talentiq" target="_blank" rel="noopener noreferrer">github ↗</a></div>
+        </article>
+        <article class="card hov" data-r="u30" style="--dl:.3s">
+          <div class="p-head">
+            <div>
+              <h3 class="p-title"><span class="pri">./</span>EcoCoin: Sustainable Action Recognition</h3>
+              <span class="p-meta">Mar 2025</span>
+            </div>
+            <div class="tags"><span class="tag">AWS</span><span class="tag">ML</span><span class="tag">Computer Vision</span></div>
+          </div>
+          <p class="p-desc">Published in IEEE Xplore 2025. Co-developed an AWS-based image analysis system that recognizes sustainable actions, covering the full pipeline from data collection to deployed inference.</p>
+          <div class="hl"><span>IEEE publication</span><span>Presented at TENCON 2024</span><span>Data-to-deployment pipeline</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience">
+    <div class="wrap w-5xl" data-r>
+      <h2><span class="pri">&gt;</span> Experience &amp; Leadership<span class="cur"></span></h2>
+
+      <div class="blk">
+        <h3><span class="mut">$</span> ./work_experience</h3>
+        <div class="card job" data-r="l">
+          <div class="j-head">
+            <div><h4>Machine Learning Engineer</h4><p class="mut">Kednus Corporation · Part-time · Remote</p></div>
+            <span>Aug 2026 – Present</span>
+          </div>
+          <ul class="pts">
+            <li><span>Build automated, multi-step agentic workflows that collect evidence and map controls across the audit lifecycle, turning raw evidence into structured, analysis-ready records and replacing manual review passes with logged, reproducible agent runs.</span></li>
+            <li><span>Develop Python evaluation harnesses that detect bias, drift, and unsafe outputs in deployed models, applying statistical analysis to model behavior and producing audit artifacts aligned to EU AI Act and ISO 42001 control requirements.</span></li>
+          </ul>
+        </div>
+        <div class="card job" data-r="l" style="--dl:.1s">
+          <div class="j-head">
+            <div><h4>Research Intern</h4><p class="mut">Illinois Wesleyan University · Prof. Mark Liffiton · Bloomington, IL</p></div>
+            <span>June 2026 – Aug 2026</span>
+          </div>
+          <ul class="pts">
+            <li><span>Researched LLM guardrailing for educational AI (RLHF, Constitutional AI, prompt engineering, PII-preserving data handling) and synthesized the findings into a five-layer guardrail framework that informed CodeHelp's system prompt architecture.</span></li>
+            <li><span>Shipped merged pull requests to Gen-Ed (Flask/SQLite/Python): an instructor-authored tutor opening message system that eliminated redundant per-student LLM API calls, cutting cost and latency.</span></li>
+            <li><span>Built a class activity summarization pipeline over student activity data with anonymized student IDs for FERPA compliance.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="blk">
+        <h3><span class="mut">$</span> ./leadership</h3>
+        <div class="lead">
+          <div class="card hov" data-r="u20">
+            <h4>Team Lead – AI/ML Division, AquaRobotics Club</h4>
+            <p class="per">Feb 2025 – Present</p>
+            <p class="d">Co-founded the club and led the inauguration demo of a lifesaving robot. Now preparing the team for national AUV competitions.</p>
+          </div>
+          <div class="card hov" data-r="u20" style="--dl:.1s">
+            <h4>Student Point of Contact – IEEE YESS 2025</h4>
+            <p class="per">Jul 2025 – Sept 2025</p>
+            <p class="d">Led marketing strategy contributing to ₹10 lakhs in revenue, working across technical and business teams.</p>
+          </div>
+          <div class="card hov" data-r="u20" style="--dl:.2s">
+            <h4>Technical Coordinator – COMSOC Society, IEEE NITC</h4>
+            <p class="per">Feb 2025 – Present</p>
+            <p class="d">Run hands-on ML and data science workshops for student members, owning curriculum and session delivery.</p>
+          </div>
+          <div class="card hov" data-r="u20" style="--dl:.3s">
+            <h4>Vice Captain – College Tennis Team</h4>
+            <p class="per">Feb 2024 – Present</p>
+            <p class="d">Balancing athletic training with academic commitments.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="blk">
+        <h3><span class="mut">$</span> ./conferences</h3>
+        <div class="card conf" data-r="r">
+          <div>
+            <h4>IEEE TENCON 2024 – Region 10 Conference</h4>
+            <p class="s">Presented research paper "EcoCoin: Sustainable Action Recognition"</p>
+          </div>
+          <div class="r"><p>Singapore</p><p>Dec 2024</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="wrap w-2xl" data-r>
+      <h2 style="margin-bottom:2rem"><span class="pri">&gt;</span> Let's Connect<span class="cur"></span></h2>
+      <p class="intro">Open to ML engineering and data science roles and interesting projects.<br>Let's build something amazing together.</p>
+      <div class="card c-card">
+        <div class="cmd"><span class="pri">$</span> cat contact_info.json</div>
+        <div class="links">
+          <a href="mailto:atswork99@gmail.com">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <span>atswork99@gmail.com</span>
+          </a>
+          <a href="tel:+13095301678">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>+1-309-530-1678</span>
+          </a>
+          <a href="https://linkedin.com/in/akshay-sriram-7329972a1" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+            <span>linkedin.com/in/akshay-sriram-7329972a1</span>
+          </a>
+          <a href="https://github.com/atchai99" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+            <span>github.com/atchai99</span>
+          </a>
+        </div>
+      </div>
+      <p class="foot" data-r="fade" style="--dl:.5s"><span class="pri">// </span>Built with curiosity and caffeine<span class="cur"></span></p>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  // Skill levels are self-ratings: edit freely.
+  var SKILLS = [
+    { title: "Languages & Frameworks", skills: [["Python", 90], ["SQL", 85], ["FastAPI", 80], ["Flask", 80]] },
+    { title: "ML / Computer Vision", skills: [["PyTorch", 82], ["OpenCV", 82], ["Pandas", 88], ["NumPy", 88], ["TensorFlow", 75], ["Matplotlib", 85]] },
+    { title: "Cloud & Platforms", skills: [["Jupyter Notebook", 90], ["Git", 85], ["AWS", 72], ["n8n", 78], ["Power BI", 68]] },
+    { title: "Specializations", skills: [["Agentic AI Workflows", 86], ["Computer Vision", 85], ["Feature Engineering", 85], ["Statistical Analysis", 82], ["Model Evaluation", 84], ["Anomaly Detection", 78]] }
+  ];
+  var ROLES = ["Programmer", "ML Engineer", "Data Scientist", "AI Researcher", "Creator", "Recreational Tennis Player"];
+  var GREETINGS = [["Hello", "en"], ["Bonjour", "fr"], ["Привет", "ru"], ["你好", "zh"], ["नमस्कारः", "sa"], ["வணக்கம்", "ta"], ["مرحباً", "ar"]];
+
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var root = document.documentElement;
+  if (!reduce) root.classList.add("js");
+
+  // build skill cards
+  var grid = document.getElementById("skillgrid");
+  grid.innerHTML = SKILLS.map(function (c, t) {
+    return '<div class="card" data-r="' + (t % 2 === 0 ? "l" : "r") + '" style="--dl:' + (t * 0.1) + 's">' +
+      '<div class="cat-head"><span class="pri">$</span><b>' + c.title + '</b></div>' +
+      c.skills.map(function (s, r) {
+        return '<div class="sk"><div class="sk-top"><span>' + s[0] + '</span><span>' + s[1] + '%</span></div>' +
+          '<div class="bar"><div class="fill" style="--lvl:' + s[1] + '%;--bd:' + (r * 0.1) + 's"></div></div></div>';
+      }).join("") + '</div>';
+  }).join("");
+
+  if (reduce) return;
+
+  // reveal on scroll, once
+  var targets = document.querySelectorAll("[data-r], .fill");
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("on"); io.unobserve(e.target); }
+      });
+    }, { threshold: 0 });
+    targets.forEach(function (el) { io.observe(el); });
+  } else {
+    targets.forEach(function (el) { el.classList.add("on"); });
+  }
+
+  // hero: greeting carousel, then typewriter
+  var greet = document.getElementById("greet");
+  var intro = document.getElementById("intro");
+  var typed = document.getElementById("typed");
+  var quote = document.getElementById("quote");
+  var EASE = "cubic-bezier(.25,.1,.25,1)";
+
+  function setGreeting(i) {
+    greet.lang = GREETINGS[i][1];
+    greet.innerHTML = GREETINGS[i][0] + '<span class="cur"></span>';
+    greet.animate([{ opacity: 0, transform: "translateY(20px)" }, { opacity: 1, transform: "none" }], { duration: 300, easing: EASE, fill: "both" });
+  }
+  function exitGreeting(done) {
+    greet.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(-20px)" }], { duration: 300, easing: EASE, fill: "both" });
+    // timer, not onfinish: animations pause in unpainted tabs and would stall the sequence
+    setTimeout(done, 300);
+  }
+
+  var gi = 0;
+  setGreeting(0);
+  function nextGreeting() {
+    if (gi < GREETINGS.length - 1) {
+      setTimeout(function () { gi++; exitGreeting(function () { setGreeting(gi); nextGreeting(); }); }, 800 - 300);
+    } else {
+      setTimeout(function () {
+        exitGreeting(function () {
+          greet.remove();
+          intro.style.display = "block";
+          intro.classList.add("fadein");
+          typed.textContent = "";
+          type();
+        });
+      }, 1000 - 300);
+    }
+  }
+  setTimeout(nextGreeting, 300);
+
+  var ri = 0, text = "", typing = true, looped = false;
+  function type() {
+    var word = ROLES[ri];
+    if (typing) {
+      if (text.length < word.length) { text = word.slice(0, text.length + 1); typed.textContent = text; setTimeout(type, 80); }
+      else { typing = false; setTimeout(type, 1500); }
+    } else if (text.length > 0) {
+      text = text.slice(0, -1); typed.textContent = text; setTimeout(type, 40);
+    } else {
+      ri = (ri + 1) % ROLES.length;
+      if (ri === 0 && !looped) { looped = true; quote.hidden = false; quote.classList.add("up10"); }
+      typing = true; type();
+    }
+  }
+})();
+</script>
+</body>
+</html>
